@@ -32,6 +32,7 @@
 <!--packages-start-->
 
 - @xen-orchestra/backups minor
+- @xen-orchestra/proxy minor
 - @xen-orchestra/rest-api patch
 
 <!--packages-end-->
