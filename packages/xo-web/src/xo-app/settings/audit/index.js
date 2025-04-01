@@ -4,6 +4,7 @@ import Button from 'button'
 import Copiable from 'copiable'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import decorate from 'apply-decorators'
+import Dropzone from 'dropzone'
 import Icon from 'icon'
 import Link from 'link'
 import NoObjects from 'no-objects'
@@ -26,6 +27,7 @@ import {
   fetchAuditRecords,
   generateAuditFingerprint,
   getPlugin,
+  importAuditRecords,
 } from 'xo'
 import RichText from 'rich-text'
 
@@ -253,6 +255,7 @@ export default decorate([
       checkedRecords: {},
       goTo: undefined,
       missingRecord: undefined,
+      showImportDropzone: false,
     }),
     effects: {
       initialize({ fetchRecords }) {
@@ -260,6 +263,9 @@ export default decorate([
       },
       async fetchRecords() {
         this.state._records = await fetchAuditRecords()
+      },
+      showImportDropzone() {
+        this.state.showImportDropzone = !this.state.showImportDropzone
       },
       handleRef(_, ref) {
         if (ref !== null) {
@@ -339,7 +345,11 @@ export default decorate([
             size='large'
           >
             {_('auditCheckIntegrity')}
+          </ActionButton>{' '}
+          <ActionButton btnStyle='warning' handler={effects.showImportDropzone} icon='upload' size='large'>
+            {_('importAuditRecords')}
           </ActionButton>
+          {!!state.showImportDropzone && <Dropzone onDrop={importAuditRecords} message={_('importRecordsTip')} />}
         </div>
         {state.isUserActionsRecordInactive && (
           <p>

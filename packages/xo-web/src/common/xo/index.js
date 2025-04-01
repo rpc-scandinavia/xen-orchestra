@@ -4240,6 +4240,15 @@ export const exportAuditRecords = () =>
     window.open(`.${url}`)
   })
 
+export const importAuditRecords = recordsFiles =>
+  _call('audit.importRecords', { zipped: recordsFiles[0].type === 'application/gzip' }).then(({ $sendTo }) =>
+    post($sendTo, recordsFiles[0]).then(response => {
+      if (response.status !== 200) {
+        throw new Error('audit log import failed')
+      }
+    })
+  )
+
 export const checkAuditRecordsIntegrity = (oldest, newest) => _call('audit.checkIntegrity', { oldest, newest })
 
 export const generateAuditFingerprint = oldest => _call('audit.generateFingerprint', { oldest })
