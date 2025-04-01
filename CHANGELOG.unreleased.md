@@ -19,6 +19,9 @@
 
 > Users must be able to say: “I had this issue, happy to know it's fixed”
 
+- **XO 6:**
+  - [VM/Create] Fix TS type-check errors (PR [#8472](https://github.com/vatesfr/xen-orchestra/pull/8472))
+
 ### Packages to release
 
 > When modifying a package, add it here with its release type.
@@ -37,6 +40,7 @@
 
 - @vates/types minor
 - @xen-orchestra/rest-api minor
+- @xen-orchestra/web patch
 - @xen-orchestra/web-core minor
 - xo-server patch
 - xo-web patch
