@@ -4240,9 +4240,9 @@ export const exportAuditRecords = () =>
     window.open(`.${url}`)
   })
 
-export const importAuditRecords = recordsFiles =>
-  _call('audit.importRecords', { zipped: recordsFiles[0].type === 'application/gzip' }).then(({ $sendTo }) =>
-    post($sendTo, recordsFiles[0]).then(response => {
+export const importAuditRecords = recordsFile =>
+  _call('audit.importRecords', { zipped: recordsFile.type === 'application/gzip' }).then(({ $sendTo }) =>
+    post($sendTo, recordsFile).then(response => {
       return response.status === 200
     })
   )

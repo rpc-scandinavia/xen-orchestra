@@ -173,6 +173,21 @@ const displayRecord = record =>
     <RichText copiable message={JSON.stringify(record, null, 2)} />
   )
 
+const renderImportStatus = ({ recordsFile, importStatus }) => {
+  switch (importStatus) {
+    case 'noFile':
+      return _('noAuditRecordsFile')
+    case 'selectedFile':
+      return <span>{`${recordsFile?.name} (${formatSize(recordsFile?.size)})`}</span>
+    case 'start':
+      return <Icon icon='loading' />
+    case 'end':
+      return <span className='text-success'>{_('importAuditRecordsSuccess')}</span>
+    case 'importError':
+      return <span className='text-danger'>{_('importAuditRecordsError')}</span>
+  }
+}
+
 const INDIVIDUAL_ACTIONS = [
   {
     handler: displayRecord,
@@ -269,44 +284,33 @@ export default decorate([
       showImportDropzone() {
         this.state.showImportDropzone = !this.state.showImportDropzone
       },
-      _importRecords() {
+      startImportRecords() {
         this.state.importStatus = 'start'
 
-        return importAuditRecords(this.state.recordsFile).then(
-          imported => {
-            if (imported !== false) {
+        return importAuditRecords(this.state.recordsFile)
+          .then(
+            imported => {
+              if (imported !== false) {
+                this.state.recordsFile = undefined
+                this.state.importStatus = 'end'
+              } else {
+                this.state.importStatus = 'selectedFile'
+              }
+            },
+            () => {
               this.state.recordsFile = undefined
-              this.state.importStatus = 'end'
-            } else {
-              this.state.importStatus = 'selectedFile'
+              this.state.importStatus = 'importError'
             }
-          },
-          () => this.setState({ recordsFile: undefined, importStatus: 'importError' })
-        )
+          )
+          .finally(this.effects.fetchRecords)
       },
-      _handleDrop(files) {
+      handleDrop(_, files) {
         this.state.recordsFile = files && files[0]
         this.state.importStatus = 'selectedFile'
       },
-      _unselectFile() {
+      unselectFile() {
         this.state.recordsFile = undefined
         this.state.importStatus = 'noFile'
-      },
-      _renderImportStatus() {
-        const { recordsFile, importStatus } = this.state
-
-        switch (importStatus) {
-          case 'noFile':
-            return _('noAuditRecordsFile')
-          case 'selectedFile':
-            return <span>{`${recordsFile.name} (${formatSize(recordsFile.size)})`}</span>
-          case 'start':
-            return <Icon icon='loading' />
-          case 'end':
-            return <span className='text-success'>{_('importAuditRecordsSuccess')}</span>
-          case 'importError':
-            return <span className='text-danger'>{_('importAuditRecordsError')}</span>
-        }
       },
       handleRef(_, ref) {
         if (ref !== null) {
@@ -394,21 +398,20 @@ export default decorate([
 
         {!!state.showImportDropzone && (
           <div>
-            <Dropzone onDrop={effects._handleDrop} message={_('importRecordsTip')} />
-            {effects._renderImportStatus()}
+            <Dropzone onDrop={effects.handleDrop} message={_('importRecordsTip')} />
+            {renderImportStatus(state)}
             <div className='form-group pull-right'>
               <ActionButton
                 btnStyle='primary'
                 className='mr-1'
                 disabled={!state.recordsFile}
-                form='import-form'
-                handler={effects._importRecords}
+                handler={effects.startImportRecords}
                 icon='import'
                 type='submit'
               >
                 {_('importButtonAuditRecords')}
               </ActionButton>
-              <Button onClick={effects._unselectFile}>{_('importAuditRecordsCleanList')}</Button>
+              <Button onClick={effects.unselectFile}>{_('importAuditRecordsCleanList')}</Button>
             </div>
           </div>
         )}
