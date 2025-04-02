@@ -18,7 +18,7 @@ import { injectIntl } from 'react-intl'
 import { get } from '@xen-orchestra/defined'
 import { injectState, provideState } from 'reaclette'
 import { noop, startCase } from 'lodash'
-import { NumericDate } from 'utils'
+import { NumericDate, formatSize } from 'utils'
 import { PREMIUM } from 'xoa-plans'
 import { User } from 'render-xo-item'
 import {
@@ -254,7 +254,9 @@ export default decorate([
       _records: undefined,
       checkedRecords: {},
       goTo: undefined,
+      importStatus: 'noFile',
       missingRecord: undefined,
+      recordsFile: undefined,
       showImportDropzone: false,
     }),
     effects: {
@@ -266,6 +268,45 @@ export default decorate([
       },
       showImportDropzone() {
         this.state.showImportDropzone = !this.state.showImportDropzone
+      },
+      _importRecords() {
+        this.state.importStatus = 'start'
+
+        return importAuditRecords(this.state.recordsFile).then(
+          imported => {
+            if (imported !== false) {
+              this.state.recordsFile = undefined
+              this.state.importStatus = 'end'
+            } else {
+              this.state.importStatus = 'selectedFile'
+            }
+          },
+          () => this.setState({ recordsFile: undefined, importStatus: 'importError' })
+        )
+      },
+      _handleDrop(files) {
+        this.state.recordsFile = files && files[0]
+        this.state.importStatus = 'selectedFile'
+      },
+      _unselectFile() {
+        this.state.recordsFile = undefined
+        this.state.importStatus = 'noFile'
+      },
+      _renderImportStatus() {
+        const { recordsFile, importStatus } = this.state
+
+        switch (importStatus) {
+          case 'noFile':
+            return _('noAuditRecordsFile')
+          case 'selectedFile':
+            return <span>{`${recordsFile.name} (${formatSize(recordsFile.size)})`}</span>
+          case 'start':
+            return <Icon icon='loading' />
+          case 'end':
+            return <span className='text-success'>{_('importAuditRecordsSuccess')}</span>
+          case 'importError':
+            return <span className='text-danger'>{_('importAuditRecordsError')}</span>
+        }
       },
       handleRef(_, ref) {
         if (ref !== null) {
@@ -349,8 +390,29 @@ export default decorate([
           <ActionButton btnStyle='warning' handler={effects.showImportDropzone} icon='upload' size='large'>
             {_('importAuditRecords')}
           </ActionButton>
-          {!!state.showImportDropzone && <Dropzone onDrop={importAuditRecords} message={_('importRecordsTip')} />}
         </div>
+
+        {!!state.showImportDropzone && (
+          <div>
+            <Dropzone onDrop={effects._handleDrop} message={_('importRecordsTip')} />
+            {effects._renderImportStatus()}
+            <div className='form-group pull-right'>
+              <ActionButton
+                btnStyle='primary'
+                className='mr-1'
+                disabled={!state.recordsFile}
+                form='import-form'
+                handler={effects._importRecords}
+                icon='import'
+                type='submit'
+              >
+                {_('importButtonAuditRecords')}
+              </ActionButton>
+              <Button onClick={effects._unselectFile}>{_('importAuditRecordsCleanList')}</Button>
+            </div>
+          </div>
+        )}
+
         {state.isUserActionsRecordInactive && (
           <p>
             <Link

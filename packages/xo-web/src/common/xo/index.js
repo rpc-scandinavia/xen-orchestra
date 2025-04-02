@@ -4243,9 +4243,7 @@ export const exportAuditRecords = () =>
 export const importAuditRecords = recordsFiles =>
   _call('audit.importRecords', { zipped: recordsFiles[0].type === 'application/gzip' }).then(({ $sendTo }) =>
     post($sendTo, recordsFiles[0]).then(response => {
-      if (response.status !== 200) {
-        throw new Error('audit log import failed')
-      }
+      return response.status === 200
     })
   )
 
