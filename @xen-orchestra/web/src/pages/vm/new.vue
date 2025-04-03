@@ -282,6 +282,7 @@
                       <!--        // Todo: Replace by the new select component -->
                       <div class="custom-select">
                         <select v-model="vdi.sr">
+                          <option :value="undefined">{{ $t('select-sr') }}</option>
                           <option v-for="sr in filteredSrs" :key="sr.id" :value="sr.id">
                             {{ `${sr.name_label} -` }}
                             {{
@@ -312,6 +313,7 @@
                       <!--        // Todo: Replace by the new select component -->
                       <div class="custom-select">
                         <select v-model="disk.sr">
+                          <option :value="undefined">{{ $t('select-sr') }}</option>
                           <option v-for="sr in filteredSrs" :key="sr.id" :value="sr.id">
                             {{ `${sr.name_label} -` }}
                             {{
@@ -643,7 +645,7 @@ const isDiskTemplate = computed(() => {
 // })
 
 const defaultSr = computed(() => {
-  const _defaultSr = vmState.pool?.default_SR || vmState.pool?.haSrs[0]
+  const _defaultSr = vmState.pool?.default_SR || undefined
   return vmState.pool && _defaultSr ? getSr(_defaultSr)?.id : ''
 })
 
@@ -656,7 +658,7 @@ const getVdis = (template: XoVmTemplate) =>
     name_label: `${vmState?.name || 'disk'}_${index}_${generateRandomString(4)}`,
     name_description: 'Created by XO',
     size: bytesToGiB(disk.size),
-    sr: defaultSr.value || '',
+    sr: defaultSr.value || undefined,
   }))
 
 const getExistingDisks = (template: XoVmTemplate) =>
