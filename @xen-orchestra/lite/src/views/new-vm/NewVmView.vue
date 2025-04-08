@@ -567,8 +567,6 @@ const bootFirmwares = computed(() => [...new Set(templates.value.map(template =>
 
 const defaultSr = computed(() => pool.value!.default_SR)
 
-const getHosts = computed(() => hosts.value)
-
 const filteredSrs = computed(() => {
   return srs.value.filter(sr => {
     const pbdRef = getPbdByOpaqueRef(sr.PBDs[0])
@@ -594,7 +592,7 @@ const isVdiOnSharedSr = computed(() => {
 
 const affinityHosts = computed(() => {
   if (isVdiOnSharedSr.value) {
-    return getHosts.value
+    return hosts.value
   }
 
   const srRef = allVdis.value[0].SR
